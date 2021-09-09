@@ -46,12 +46,14 @@ namespace ServerInventory
     }
 
     [HarmonyPatch(typeof(Inventory), "Changed")]
-    public static class AddItem
+    public static class Changed
     {
-        private static void Postfix(Inventory __instance)
+        private static void Postfix()
         {
+            if (!Player.m_localPlayer) return;
+
             Debug.LogError("Changed");
-            Util.SaveInventory(__instance);
+            Util.SaveInventory(Player.m_localPlayer.m_inventory);
         }
     }
 

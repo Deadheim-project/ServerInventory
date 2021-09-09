@@ -11,7 +11,7 @@ namespace ServerInventory
         public static List<string> blacklist = new List<string>{ "Neck_BiteAttack" };
         public static void SaveInventory(Inventory __instance)
         {
-            if (!Player.m_localPlayer || !ServerInventory.hasSpawned) return;
+            if (!Player.m_localPlayer || !ServerInventory.hasSpawned ) return;
 
             if (__instance.m_name == "Inventory")
             {
@@ -51,7 +51,9 @@ namespace ServerInventory
         }
 
         public static void LoadInventory(List<InventoryDTO> inventoryDTOs)
-        {  
+        {
+            if (!Player.m_localPlayer) return;
+
             List<Inventory> inventoryList = GetInventoryList(Player.m_localPlayer.m_inventory);
 
             if (inventoryList.Count == 0) return;
