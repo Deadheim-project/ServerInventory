@@ -35,6 +35,8 @@ namespace ServerInventory
         {
             Debug.LogError("RPC_InventorySync");
 
+            if (!ZNet.instance.IsServer()) return;
+
             ZNetPeer peer = ZNet.instance.GetPeer(sender);
 
             if (peer != null)
