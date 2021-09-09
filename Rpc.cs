@@ -11,7 +11,7 @@ namespace ServerInventory
         public static void RPC_LoadInventory(long sender, ZPackage pkg)
         {
             Debug.LogError("RPC_LoadInventory");
-            Util.LoadInventory(JsonMapper.ToObject<List<InventoryDTO>>(pkg.ReadString()));
+            Util.LoadInventory(JsonMapper.ToObject<List<InventoryDTO>>(StringCompression.Decompress(pkg.ReadString())));
         }
 
         public static void RPC_SaveInventory(long sender, ZPackage pkg)
@@ -27,7 +27,7 @@ namespace ServerInventory
                 string steamId = ((ZSteamSocket)peer.m_socket).GetPeerID().m_SteamID.ToString();
                 string playerName = peer.m_playerName;
                 string directory = Utils.GetSaveDataPath() + "/inventories/" + playerName + "-" + steamId + ".json";
-                File.WriteAllText(directory, pkg.ReadString());
+                File.WriteAllText(directory, StringCompression.Decompress(pkg.ReadString()));
             }
         }
 
@@ -49,7 +49,7 @@ namespace ServerInventory
                 if (File.Exists(directory))
                 {
                     ZPackage inventory = new ZPackage();
-                    inventory.Write(File.ReadAllText(directory));
+                    inventory.Write(StringCompression.Compress(File.ReadAllText(directory)));
                     ZRoutedRpc.instance.InvokeRoutedRPC(sender, "LoadInventory", inventory);
                 }
             }

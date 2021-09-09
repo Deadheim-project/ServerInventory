@@ -41,6 +41,7 @@
     <Compile Include="Rpc.cs" />
     <Compile Include="ServerInventory.cs" />
     <Compile Include="Patches.cs" />
+    <Compile Include="StringCompression.cs" />
     <Compile Include="Sync.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>

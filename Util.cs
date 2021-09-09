@@ -57,7 +57,7 @@ namespace ServerInventory
             ServerInventory.lastSavedInventoryCount = inventoryDTOList.Count;
             string json = JsonMapper.ToJson(inventoryDTOList);
             ZPackage zpackge = new ZPackage();
-            zpackge.Write(json);
+            zpackge.Write(StringCompression.Compress(json));
             ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), "SaveInventory", zpackge);
 
         }
