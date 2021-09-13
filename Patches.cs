@@ -10,18 +10,29 @@ namespace ServerInventory
     internal class OnSpawned
     {
         private static void Postfix(Player __instance)
+        { 
+            ServerInventory.hasSpawned = true;
+            ServerInventory.isDead = false;
+            Debug.LogError("OnSpawned");
+        }
+    }
+
+    [HarmonyPatch(typeof(Player), "Update")]
+    internal class Update
+    {
+        private static void Postfix(Player __instance)
         {
             if (ZRoutedRpc.instance == null)
                 return;
 
-            if (!ServerInventory.isSynced)
+            if (!ServerInventory.isSynced && ServerInventory.hasSpawned)
             {
+                if (ServerInventory.hasQuickSlot)
+                {
+                    if (Util.GetInventoryList(__instance.m_inventory).Count < 3) return;
+                }
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), "InventorySync", new ZPackage());
             }
-
-            ServerInventory.hasSpawned = true;
-            ServerInventory.isDead = false;
-            Debug.LogError("OnSpawned");
         }
     }
 

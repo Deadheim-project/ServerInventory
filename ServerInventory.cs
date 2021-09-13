@@ -12,6 +12,7 @@ namespace ServerInventory
         public const string PluginGUID = "Detalhes.ServerInventory";
         Harmony harmony = new Harmony(PluginGUID);
         public static Assembly quickSlotsAssembly;
+        public static bool hasQuickSlot = false;
         public static string Version = "1";
         public static List<ZRpc> validatedUsers = new List<ZRpc>();
         public static bool hasSpawned = false;
@@ -29,9 +30,11 @@ namespace ServerInventory
 
         private void Start()
         {
-            if (Chainloader.PluginInfos.ContainsKey("randyknapp.mods.equipmentandquickslots"))
+            if (Chainloader.PluginInfos.ContainsKey("randyknapp.mods.equipmentandquickslots") && !hasQuickSlot) {
                 quickSlotsAssembly = Chainloader.PluginInfos["randyknapp.mods.equipmentandquickslots"].Instance.GetType().Assembly;
-
+                hasQuickSlot = true;
+            }
         }
     }
 }
+

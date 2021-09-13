@@ -11,14 +11,19 @@ namespace ServerInventory
         public static List<string> blacklist = new List<string> { "Neck_BiteAttack" };
         public static void SaveInventory(Inventory __instance)
         {
+            if (__instance.m_name != "Inventory") return;
             if (!Player.m_localPlayer) return;
             if (!ServerInventory.hasSpawned) return;
             if (ServerInventory.isLoadingInventory) return;
             if (ServerInventory.isDead) return;
             if (ServerInventory.isMovingAll) return;
-            if (__instance.m_name != "Inventory") return;
 
             List<Inventory> invetoryList = GetInventoryList(__instance);
+
+            if (ServerInventory.hasQuickSlot)
+            {
+                if (invetoryList.Count < 3) return;
+            }
 
             if (ServerInventory.lastSavedInventoryCount > 0)
             {
@@ -59,7 +64,6 @@ namespace ServerInventory
             ZPackage zpackge = new ZPackage();
             zpackge.Write(StringCompression.Compress(json));
             ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), "SaveInventory", zpackge);
-
         }
 
         public static void LoadInventory(List<InventoryDTO> inventoryDTOs)
@@ -91,7 +95,7 @@ namespace ServerInventory
         public static List<Inventory> GetInventoryList(Inventory __instance)
         {
             List<Inventory> inventoryList = new List<Inventory>();
-            if (ServerInventory.quickSlotsAssembly != null)
+            if (ServerInventory.hasQuickSlot)
             {
                 var extendedInventory = ServerInventory.quickSlotsAssembly.GetType("EquipmentAndQuickSlots.InventoryExtensions").GetMethod("Extended", BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { __instance });
                 if (extendedInventory == null) return inventoryList;
