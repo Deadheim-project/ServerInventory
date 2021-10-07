@@ -1,19 +1,15 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using HarmonyLib;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace ServerInventory
 {
-    [BepInPlugin("Detalhes.ServerInventory", "ServerInventory", "1.0.0")]
+    [BepInPlugin("Detalhes.ServerInventory", "ServerInventory", "1.0.1")]
     public class ServerInventory : BaseUnityPlugin
     {
         public const string PluginGUID = "Detalhes.ServerInventory";
         Harmony harmony = new Harmony(PluginGUID);
-        public static Assembly quickSlotsAssembly;
-        public static bool hasQuickSlot = false;
-        public static string Version = "1";
+        public static string Version = "1.2";
         public static List<ZRpc> validatedUsers = new List<ZRpc>();
         public static bool hasSpawned = false;
         public static bool hasServerInventory = false;
@@ -26,14 +22,6 @@ namespace ServerInventory
         private void Awake()
         {
             harmony.PatchAll();
-        }
-
-        private void Start()
-        {
-            if (Chainloader.PluginInfos.ContainsKey("randyknapp.mods.equipmentandquickslots") && !hasQuickSlot) {
-                quickSlotsAssembly = Chainloader.PluginInfos["randyknapp.mods.equipmentandquickslots"].Instance.GetType().Assembly;
-                hasQuickSlot = true;
-            }
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -10,10 +12,9 @@ namespace ServerInventory
     internal class OnSpawned
     {
         private static void Postfix(Player __instance)
-        { 
+        {
             ServerInventory.hasSpawned = true;
             ServerInventory.isDead = false;
-            Debug.LogError("OnSpawned");
         }
     }
 
@@ -27,11 +28,8 @@ namespace ServerInventory
 
             if (!ServerInventory.isSynced && ServerInventory.hasSpawned)
             {
-                if (ServerInventory.hasQuickSlot)
-                {
-                    if (Util.GetInventoryList(__instance.m_inventory).Count < 3) return;
-                }
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), "InventorySync", new ZPackage());
+                ServerInventory.isSynced = true;
             }
         }
     }
@@ -41,9 +39,19 @@ namespace ServerInventory
     {
         private static void Postfix(Player __instance)
         {
-            Debug.LogError("OnDeath");
             Util.SaveInventory(Player.m_localPlayer.m_inventory);
             ServerInventory.isDead = true;
+        }
+    }
+
+    [HarmonyPatch(typeof(ZNet), "Shutdown")]
+    internal class Disconnect
+    {
+        private static void Postfix()
+        {
+            Debug.LogError("Shutdown");
+            ServerInventory.hasSpawned = false;
+            ServerInventory.isSynced = false;
         }
     }
 
@@ -72,7 +80,6 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            Debug.LogError("InventoryRemoveItem1");
             Util.SaveInventory(__instance);
         }
     }
@@ -84,7 +91,6 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            Debug.LogError("InventoryRemoveItem2");
             Util.SaveInventory(__instance);
         }
     }
@@ -96,7 +102,6 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            Debug.LogError("InventoryRemoveItem3");
             Util.SaveInventory(__instance);
         }
     }
@@ -109,7 +114,6 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            Debug.LogError("InventoryRemoveItem4");
             Util.SaveInventory(__instance);
         }
     }
@@ -121,7 +125,6 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            Debug.LogError("InventoryAddItem");
             Util.SaveInventory(__instance);
         }
     }
@@ -133,11 +136,10 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            Debug.LogError("InventoryAddItem1");
             Util.SaveInventory(__instance);
         }
-    }    
-     
+    }
+
     [HarmonyPatch(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) })]
     public static class InventoryAddItem2
     {
@@ -145,7 +147,6 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            Debug.LogError("InventoryAddItem2");
             Util.SaveInventory(__instance);
         }
     }
@@ -157,7 +158,6 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            Debug.LogError("RemoveOneItem");
             Util.SaveInventory(__instance);
         }
     }
@@ -168,17 +168,14 @@ namespace ServerInventory
         private static void Prefix(Inventory __instance)
         {
             ServerInventory.isMovingAll = true;
-            Debug.LogError("isMovingAll true");
         }
 
         private static void Postfix(Inventory __instance)
         {
             ServerInventory.isMovingAll = false;
-            Debug.LogError("isMovingAll false");
             Util.SaveInventory(__instance);
         }
     }
-
 
     [HarmonyPatch(typeof(Game), "Start")]
     public static class GameStart
@@ -192,6 +189,23 @@ namespace ServerInventory
             ZRoutedRpc.instance.Register<ZPackage>("LoadInventory", new Action<long, ZPackage>(Rpc.RPC_LoadInventory));
             ZRoutedRpc.instance.Register<ZPackage>("SaveInventory", new Action<long, ZPackage>(Rpc.RPC_SaveInventory));
             Debug.LogError("Routed");
+        }
+    }
+
+    [HarmonyPatch(typeof(World), nameof(World.SaveWorldMetaData))]
+    public static class SaveWorldMetaData
+    {
+        private static void Postfix()
+        {
+            if (ZNet.instance?.IsServer() == true)
+            {
+                string backupPath = Utils.GetSaveDataPath() + "/inventoriesBackup/";
+                string inventoriesPath = Utils.GetSaveDataPath() + "/inventories/";
+                Directory.CreateDirectory(backupPath);
+
+                string fileName = backupPath + "inventories-" + DateTime.Now.ToString("dd-MM-yyyy-hh-mm-ss") + ".zip";
+                ZipFile.CreateFromDirectory(inventoriesPath, fileName);
+            }
         }
     }
 }
