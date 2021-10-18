@@ -1,5 +1,4 @@
 ﻿using LitJson;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -38,13 +37,19 @@ namespace ServerInventory
                 string playerName = peer.m_playerName;
                 string directory = Utils.GetSaveDataPath() + "/inventories/" + playerName + "-" + steamId + ".json";
 
+                ZPackage inventory = new ZPackage();
+
                 if (File.Exists(directory))
                 {
-                    ZPackage inventory = new ZPackage();
                     inventory.Write(StringCompression.Compress(File.ReadAllText(directory)));
-                    ZRoutedRpc.instance.InvokeRoutedRPC(sender, "LoadInventory", inventory);
+                } else if (File.Exists(Utils.GetSaveDataPath() + "/characters/" + steamId + "_" + playerName + ".fch")) {
+                    return;
+                } else
+                {
+                    inventory.Write(StringCompression.Compress(File.ReadAllText(Utils.GetSaveDataPath() + "/inventories/default.json")));
                 }
 
+                ZRoutedRpc.instance.InvokeRoutedRPC(sender, "LoadInventory", inventory);
                 Debug.LogError("RPC_InventorySync: " + playerName + " - " + steamId);
             }
         }

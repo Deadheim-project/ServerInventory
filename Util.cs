@@ -85,8 +85,12 @@ namespace ServerInventory
 
             foreach (SkillDTO skillDTO in rootDTO.SkillDTOList)
             {
-                Player.m_localPlayer.m_skills.m_skillData[(Skills.SkillType)skillDTO.SkillType].m_accumulator = skillDTO.Accumulator;
-                Player.m_localPlayer.m_skills.m_skillData[(Skills.SkillType)skillDTO.SkillType].m_level = skillDTO.Level;
+                Skills.Skill skill;
+                Player.m_localPlayer.m_skills.m_skillData.TryGetValue((Skills.SkillType)skillDTO.SkillType, out skill);
+                if (skill == null) continue;
+
+                skill.m_accumulator = skillDTO.Accumulator;
+                skill.m_level = skillDTO.Level;
             }
 
             ServerInventory.isLoadingInventory = false;
