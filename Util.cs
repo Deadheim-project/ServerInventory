@@ -12,11 +12,11 @@ namespace ServerInventory
             if (__instance.m_name != "Inventory") return;
             if (!Player.m_localPlayer) return;
             if (!ServerInventory.hasSpawned) return;
-            if (ServerInventory.isLoadingInventory) return;
             if (ServerInventory.isDead) return;
             if (ServerInventory.isMovingAll) return;
+            if (ServerInventory.isLoading) return;
             if (!Player.m_localPlayer.m_skills) return;
-            if (__instance != Player.m_localPlayer.m_inventory) return;            
+            if (__instance != Player.m_localPlayer.m_inventory) return;
 
             if (ServerInventory.lastSavedInventoryCount > 0)
             {
@@ -34,7 +34,7 @@ namespace ServerInventory
                 dto.Accumulator = entry.Value.m_accumulator;
                 dto.Level = entry.Value.m_level;
                 skillDTOList.Add(dto);
-            }  
+            }
 
             List<InventoryDTO> inventoryDTOList = new List<InventoryDTO>();
 
@@ -58,9 +58,77 @@ namespace ServerInventory
                 inventoryDTOList.Add(dto);
             }
 
+            List<RootDTO.KnownTextDTO> knownTextDTOs = new List<RootDTO.KnownTextDTO>();
+
+            if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerLevel", out string value))
+            {
+                var text = new RootDTO.KnownTextDTO();
+                text.Key = "playerLevel";
+                text.Value = value;
+                knownTextDTOs.Add(text);
+            }
+
+            if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerExp", out string value2))
+            {
+                var text = new RootDTO.KnownTextDTO();
+                text.Key = "playerExp";
+                text.Value = value2;
+                knownTextDTOs.Add(text);
+            }
+
+            if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerAvailablePoints", out string value3))
+            {
+                var text = new RootDTO.KnownTextDTO();
+                text.Key = "playerAvailablePoints";
+                text.Value = value3;
+                knownTextDTOs.Add(text);
+            }
+
+            if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerAgility", out string value4))
+            {
+                var text = new RootDTO.KnownTextDTO();
+                text.Key = "playerAgility";
+                text.Value = value4;
+                knownTextDTOs.Add(text);
+            }
+
+            if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerStrength", out string value5))
+            {
+                var text = new RootDTO.KnownTextDTO();
+                text.Key = "playerStrength";
+                text.Value = value5;
+                knownTextDTOs.Add(text);
+            }
+
+            if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerIntelligence", out string value6))
+            {
+                var text = new RootDTO.KnownTextDTO();
+                text.Key = "playerIntelligence";
+                text.Value = value6;
+                knownTextDTOs.Add(text);
+            }
+
+            if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerFocus", out string value7))
+            {
+                var text = new RootDTO.KnownTextDTO();
+                text.Key = "playerFocus";
+                text.Value = value7;
+                knownTextDTOs.Add(text);
+
+            }
+
+            if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerConstitution", out string value8))
+            {
+                var text = new RootDTO.KnownTextDTO();
+                text.Key = "playerConstitution";
+                text.Value = value8;
+                knownTextDTOs.Add(text);
+            }
+
             RootDTO rootDTO = new RootDTO();
             rootDTO.SkillDTOList = skillDTOList;
             rootDTO.InventoryDTOList = inventoryDTOList;
+            rootDTO.KnownTextDTOList = knownTextDTOs;
 
             ServerInventory.lastSavedInventoryCount = inventoryDTOList.Count;
             string json = JsonMapper.ToJson(rootDTO);
@@ -74,7 +142,7 @@ namespace ServerInventory
         {
             if (!Player.m_localPlayer) return;
 
-            ServerInventory.isLoadingInventory = true;
+            ServerInventory.isLoading = true;
 
             Player.m_localPlayer.m_inventory.RemoveAll();
 
@@ -85,15 +153,17 @@ namespace ServerInventory
 
             foreach (SkillDTO skillDTO in rootDTO.SkillDTOList)
             {
-                Skills.Skill skill;
-                Player.m_localPlayer.m_skills.m_skillData.TryGetValue((Skills.SkillType)skillDTO.SkillType, out skill);
-                if (skill == null) continue;
-
-                skill.m_accumulator = skillDTO.Accumulator;
-                skill.m_level = skillDTO.Level;
+                Player.m_localPlayer.m_skills.m_skillData[(Skills.SkillType)skillDTO.SkillType].m_accumulator = skillDTO.Accumulator;
+                Player.m_localPlayer.m_skills.m_skillData[(Skills.SkillType)skillDTO.SkillType].m_level = skillDTO.Level;
             }
 
-            ServerInventory.isLoadingInventory = false;
+            foreach (RootDTO.KnownTextDTO knownTextDTO in rootDTO.KnownTextDTOList)
+            {
+                Player.m_localPlayer.m_knownTexts[knownTextDTO.Key] = knownTextDTO.Value;
+            }
+
+            ServerInventory.isLoading = false;
+
             Debug.Log("Inventory Loaded: " + rootDTO.InventoryDTOList.Count + " items");
         }
     }

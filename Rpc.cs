@@ -42,9 +42,8 @@ namespace ServerInventory
                 if (File.Exists(directory))
                 {
                     inventory.Write(StringCompression.Compress(File.ReadAllText(directory)));
-                } else if (File.Exists(Utils.GetSaveDataPath() + "/characters/" + steamId + "_" + playerName + ".fch")) {
-                    return;
-                } else
+                }
+                else
                 {
                     inventory.Write(StringCompression.Compress(File.ReadAllText(Utils.GetSaveDataPath() + "/inventories/default.json")));
                 }

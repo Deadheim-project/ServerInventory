@@ -15,22 +15,10 @@ namespace ServerInventory
         {
             ServerInventory.hasSpawned = true;
             ServerInventory.isDead = false;
-        }
-    }
 
-    [HarmonyPatch(typeof(Player), "Update")]
-    internal class Update
-    {
-        private static void Postfix(Player __instance)
-        {
-            if (ZRoutedRpc.instance == null)
-                return;
-
-            if (!ServerInventory.isSynced && ServerInventory.hasSpawned)
-            {
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), "InventorySync", new ZPackage());
-                ServerInventory.isSynced = true;
-            }
+            if (ServerInventory.isSynced) return;
+            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), "InventorySync", new ZPackage());
+            ServerInventory.isSynced = true;
         }
     }
 
@@ -47,9 +35,8 @@ namespace ServerInventory
     [HarmonyPatch(typeof(ZNet), "Shutdown")]
     internal class Disconnect
     {
-        private static void Postfix()
+        private static void Prefix()
         {
-            Debug.LogError("Shutdown");
             ServerInventory.hasSpawned = false;
             ServerInventory.isSynced = false;
         }
@@ -105,7 +92,6 @@ namespace ServerInventory
             Util.SaveInventory(__instance);
         }
     }
-
 
     [HarmonyPatch(typeof(Inventory), "RemoveItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int) })]
     public static class InventoryRemoveItem4
@@ -188,7 +174,6 @@ namespace ServerInventory
             ZRoutedRpc.instance.Register<ZPackage>("InventorySync", new Action<long, ZPackage>(Rpc.RPC_InventorySync));
             ZRoutedRpc.instance.Register<ZPackage>("LoadInventory", new Action<long, ZPackage>(Rpc.RPC_LoadInventory));
             ZRoutedRpc.instance.Register<ZPackage>("SaveInventory", new Action<long, ZPackage>(Rpc.RPC_SaveInventory));
-            Debug.LogError("Routed");
         }
     }
 

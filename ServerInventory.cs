@@ -14,9 +14,9 @@ namespace ServerInventory
         public static bool hasSpawned = false;
         public static bool hasServerInventory = false;
         public static bool isDead = false;
-        public static bool isLoadingInventory = false;
         public static bool isSynced = false;
         public static bool isMovingAll = false;
+        public static bool isLoading = false;
         public static int lastSavedInventoryCount = 0;
 
         private void Awake()
