@@ -120,14 +120,22 @@ namespace ServerInventory
                     text.Key = "playerFocus";
                     text.Value = value7;
                     knownTextDTOs.Add(text);
-
                 }
+                
 
                 if (Player.m_localPlayer.m_knownTexts.TryGetValue("playerConstitution", out string value8))
                 {
                     var text = new RootDTO.KnownTextDTO();
                     text.Key = "playerConstitution";
                     text.Value = value8;
+                    knownTextDTOs.Add(text);
+                }
+
+                if (Player.m_localPlayer.m_knownTexts.TryGetValue("dead_PlayerWards", out string value9))
+                {
+                    var text = new RootDTO.KnownTextDTO();
+                    text.Key = "dead_PlayerWards";
+                    text.Value = value9;
                     knownTextDTOs.Add(text);
                 }
 
